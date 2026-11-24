@@ -27,18 +27,27 @@ const LINE2 =
   "I've learned to look out of the window before I believe the forecast, so from now on I check the sky before I water the lawn.";
 
 // The entry is exactly the two lines joined by one newline: 255
-// characters in total. Check before writing so a bad build fails
+// characters in total. Validate before writing so a bad build fails
 // loudly here instead of shipping an entry the gate refuses.
+function validateEntry(
+  line1: string,
+  line2: string,
+  entry: string,
+  chars: number,
+): void {
+  if (chars !== 255) {
+    throw new Error(`entry is ${chars} characters; expected exactly 255`);
+  }
+  if ([...line1].length !== 129 || [...line2].length !== 125) {
+    throw new Error(
+      `line lengths are ${[...line1].length} and ${[...line2].length}; expected 129 and 125`,
+    );
+  }
+}
+
 const ENTRY = LINE1 + '\n' + LINE2;
 const chars = [...ENTRY].length;
-if (chars !== 255) {
-  throw new Error(`entry is ${chars} characters; expected exactly 255`);
-}
-if ([...LINE1].length !== 129 || [...LINE2].length !== 125) {
-  throw new Error(
-    `line lengths are ${[...LINE1].length} and ${[...LINE2].length}; expected 129 and 125`,
-  );
-}
+validateEntry(LINE1, LINE2, ENTRY, chars);
 
 const outDir = process.env.MAKEFUN_OUTPUT_DIR?.trim()
   ? process.env.MAKEFUN_OUTPUT_DIR
@@ -47,6 +56,14 @@ const outDir = process.env.MAKEFUN_OUTPUT_DIR?.trim()
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'entry.txt'), ENTRY, 'utf8');
 
-console.log(LINE1);
-console.log(LINE2);
-console.log(`wrote entry.txt (${chars} characters)`);
+// Print the entry the way the grader reads it: the two lines, then
+// the character count the run produced, so a human eye can check the
+// output against the file without opening it.
+function printEntry(entry: string, chars: number): void {
+  for (const line of entry.split('\n')) {
+    console.log(line);
+  }
+  console.log(`wrote entry.txt (${chars} characters)`);
+}
+
+printEntry(ENTRY, chars);
